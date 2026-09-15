@@ -3,6 +3,7 @@
  * Измени имя получателя ниже при необходимости.
  */
 const RECIPIENT_NAME = "Санёчек";
+const BIRTHDAY_AGE = 27;
 
 const LEVELS = {
   identity: 1,
@@ -10,6 +11,7 @@ const LEVELS = {
   cakes: 3,
   spot: 3,
   maze: 3,
+  candles: 3,
   delivery: 4,
   finale: 4,
 };
@@ -422,7 +424,7 @@ function tryMoveMaze(dir) {
   if (mazeState.r === MAZE_END.r && mazeState.c === MAZE_END.c) {
     mazeState.won = true;
     $("#maze-feedback").innerHTML =
-      "✅ Подарок доставлен в Финляндию!<br />Международная логистика пройдена успешно.";
+      "✅ Подарок доставлен в Финляндию!<br />Осталось задуть свечи.";
     $("#maze-next").hidden = false;
     return;
   }
@@ -452,6 +454,66 @@ function setupMazeControls() {
     event.preventDefault();
     tryMoveMaze(dir);
   });
+}
+
+/* ---------- Screen 3.4: blow out candles ---------- */
+const candlesState = {
+  blown: 0,
+  done: false,
+};
+
+function updateCandlesHud() {
+  $("#candles-score").textContent = `СВЕЧИ: ${candlesState.blown} / ${BIRTHDAY_AGE}`;
+}
+
+function buildCandles() {
+  const grid = $("#candles-grid");
+  const feedback = $("#candles-feedback");
+  const nextBtn = $("#candles-next");
+
+  candlesState.blown = 0;
+  candlesState.done = false;
+  feedback.textContent = "";
+  nextBtn.hidden = true;
+  updateCandlesHud();
+  grid.innerHTML = "";
+
+  for (let i = 0; i < BIRTHDAY_AGE; i += 1) {
+    const candle = document.createElement("button");
+    candle.type = "button";
+    candle.className = "candle lit";
+    candle.dataset.index = String(i);
+    candle.setAttribute("aria-label", `Свеча ${i + 1}`);
+    candle.innerHTML = '<span class="flame">🕯️</span>';
+
+    candle.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      if (candlesState.done || candle.classList.contains("out")) return;
+
+      candle.classList.remove("lit");
+      candle.classList.add("out");
+      candle.innerHTML = '<span class="smoke">💨</span>';
+      candle.disabled = true;
+      candlesState.blown += 1;
+      updateCandlesHud();
+
+      if (candlesState.blown >= BIRTHDAY_AGE) {
+        candlesState.done = true;
+        feedback.innerHTML =
+          `✅ Все ${BIRTHDAY_AGE} свечей задуты!<br />Желание загадано. Система это зафиксировала.`;
+        nextBtn.hidden = false;
+        $("#candles-hint").textContent = "🎉 ГОТОВО";
+      } else {
+        const left = BIRTHDAY_AGE - candlesState.blown;
+        feedback.textContent =
+          left === 1 ? "Осталась последняя свеча!" : `Осталось: ${left}`;
+      }
+    });
+
+    grid.appendChild(candle);
+  }
+
+  $("#candles-hint").textContent = "💨 ДУЙ!";
 }
 
 /* ---------- Screen 4: delivery ---------- */
@@ -555,6 +617,10 @@ function setupActions() {
         break;
       case "reset-maze":
         initMaze();
+        break;
+      case "to-candles":
+        showScreen("candles");
+        buildCandles();
         break;
       case "to-delivery":
         showScreen("delivery");

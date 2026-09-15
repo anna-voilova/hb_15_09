@@ -136,8 +136,26 @@
           <p class="feedback" id="maze-feedback" role="status" aria-live="polite"></p>
           <div class="btn-row">
             <button type="button" class="btn btn-ghost" id="maze-reset" data-action="reset-maze">СБРОСИТЬ МАРШРУТ</button>
-            <button type="button" class="btn btn-primary" id="maze-next" data-action="to-delivery" hidden>ПЕРЕЙТИ К ДОСТАВКЕ</button>
+            <button type="button" class="btn btn-primary" id="maze-next" data-action="to-candles" hidden>СЛЕДУЮЩЕЕ ИСПЫТАНИЕ</button>
           </div>
+        </div>
+      </section>
+
+      <!-- Экран 3.4: задуть свечи -->
+      <section class="screen" data-screen="candles" aria-labelledby="candles-title">
+        <div class="panel panel-game">
+          <h2 id="candles-title" class="title">МИНИ-ИСПЫТАНИЕ №4</h2>
+          <p class="lead">На торту 27 свечей — по числу лет именинника.<br />Кликай по свечам, чтобы задуть их все.</p>
+          <div class="game-hud">
+            <span id="candles-score">СВЕЧИ: 0 / 27</span>
+            <span id="candles-hint">💨 ДУЙ!</span>
+          </div>
+          <div class="cake-stage">
+            <div class="big-cake" aria-hidden="true">🎂</div>
+            <div class="candles-grid" id="candles-grid" aria-label="Свечи на торте"></div>
+          </div>
+          <p class="feedback" id="candles-feedback" role="status" aria-live="polite"></p>
+          <button type="button" class="btn btn-primary" id="candles-next" data-action="to-delivery" hidden>ПЕРЕЙТИ К ДОСТАВКЕ</button>
         </div>
       </section>
 
