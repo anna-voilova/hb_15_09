@@ -13,17 +13,13 @@ const LEVELS = {
   finale: 4,
 };
 
-const SPOT_PAIRS = [
-  ["😀", "😃"],
-  ["😎", "🤓"],
-  ["🐱", "😺"],
-  ["⭐", "✨"],
-  ["🙂", "😊"],
-  ["🟦", "🔷"],
-  ["🍎", "🍏"],
-  ["🐶", "🐕"],
-  ["🌙", "🌚"],
-  ["🟡", "🟠"],
+const CAKE_TARGET = 10;
+const CAKE_TIME = 30;
+const FOOD_ENEMIES = [
+  "🍕", "🍔", "🍟", "🌭", "🍿",
+  "🌮", "🌯", "🍣", "🍜", "🍝",
+  "🥪", "🥨", "🧀", "🥗", "🍪",
+  "🍩", "🍫", "🍦", "🍤", "🥓",
 ];
 
 const state = {
@@ -32,7 +28,7 @@ const state = {
   cakes: {
     running: false,
     caught: 0,
-    timeLeft: 10,
+    timeLeft: CAKE_TIME,
     timerId: null,
     moveId: null,
   },
@@ -160,53 +156,61 @@ function clearCakesField() {
 }
 
 function updateCakesHud() {
-  $("#cakes-score").textContent = `ТОРТЫ: ${state.cakes.caught} / 5`;
+  $("#cakes-score").textContent = `ТОРТЫ: ${state.cakes.caught} / ${CAKE_TARGET}`;
   $("#cakes-time").textContent = `ВРЕМЯ: ${state.cakes.timeLeft}`;
 }
 
-function spawnCake(field) {
-  const cake = document.createElement("button");
-  cake.type = "button";
-  cake.className = "cake";
-  cake.textContent = "🎂";
-  cake.setAttribute("aria-label", "Торт");
-
-  const size = rand(1.7, 2.8);
-  cake.style.setProperty("--size", `${size}rem`);
-  cake.style.setProperty("--dur", `${rand(1.8, 3.6)}s`);
-  cake.style.setProperty("--dx", `${rand(-50, 50)}px`);
-  cake.style.setProperty("--dy", `${rand(-40, 40)}px`);
+function placeFlyer(el, field) {
+  const size = rand(1.5, 2.6);
+  el.style.setProperty("--size", `${size}rem`);
+  el.style.setProperty("--dur", `${rand(0.55, 1.15)}s`);
+  el.style.setProperty("--dx", `${rand(-110, 110)}px`);
+  el.style.setProperty("--dy", `${rand(-90, 90)}px`);
 
   const maxX = Math.max(field.clientWidth - 56, 10);
   const maxY = Math.max(field.clientHeight - 56, 10);
-  cake.style.left = `${rand(0, maxX)}px`;
-  cake.style.top = `${rand(0, maxY)}px`;
+  el.style.left = `${rand(0, maxX)}px`;
+  el.style.top = `${rand(0, maxY)}px`;
+}
 
-  const catchCake = (event) => {
+function spawnFlyer(field, { emoji, isCake }) {
+  const flyer = document.createElement("button");
+  flyer.type = "button";
+  flyer.className = "flyer";
+  flyer.textContent = emoji;
+  flyer.dataset.cake = isCake ? "1" : "0";
+  flyer.setAttribute("aria-label", isCake ? "Торт" : "Еда");
+  placeFlyer(flyer, field);
+
+  const onCatch = (event) => {
     event.preventDefault();
-    if (!state.cakes.running || cake.classList.contains("caught")) return;
-    cake.classList.add("caught");
+    if (!state.cakes.running || flyer.classList.contains("caught")) return;
+
+    if (!isCake) {
+      flyer.classList.remove("enemy-hit");
+      void flyer.offsetWidth;
+      flyer.classList.add("enemy-hit");
+      $("#cakes-feedback").textContent = "Что-то не выглядит как торт";
+      return;
+    }
+
+    flyer.classList.add("caught");
     state.cakes.caught += 1;
     updateCakesHud();
-    setTimeout(() => cake.remove(), 180);
-    if (state.cakes.caught >= 5) finishCakes(true);
+    $("#cakes-feedback").textContent = "";
+    setTimeout(() => flyer.remove(), 180);
+    if (state.cakes.caught >= CAKE_TARGET) finishCakes(true);
   };
 
-  cake.addEventListener("pointerdown", catchCake);
-  field.appendChild(cake);
+  flyer.addEventListener("pointerdown", onCatch);
+  field.appendChild(flyer);
 }
 
 function repositionCakes() {
   const field = $("#cakes-field");
-  $$(".cake", field).forEach((cake) => {
-    if (cake.classList.contains("caught")) return;
-    const maxX = Math.max(field.clientWidth - 56, 10);
-    const maxY = Math.max(field.clientHeight - 56, 10);
-    cake.style.left = `${rand(0, maxX)}px`;
-    cake.style.top = `${rand(0, maxY)}px`;
-    cake.style.setProperty("--dx", `${rand(-60, 60)}px`);
-    cake.style.setProperty("--dy", `${rand(-50, 50)}px`);
-    cake.style.setProperty("--dur", `${rand(1.6, 3.2)}s`);
+  $$(".flyer", field).forEach((flyer) => {
+    if (flyer.classList.contains("caught")) return;
+    placeFlyer(flyer, field);
   });
 }
 
@@ -226,9 +230,9 @@ function finishCakes(won) {
   startBtn.hidden = true;
 
   if (won) {
-    $$(".cake").forEach((c) => c.remove());
+    $$(".flyer").forEach((c) => c.remove());
     feedback.innerHTML =
-      "<strong>🎂 5/5</strong><br />Удивительно.<br />Торты пойманы.<br />Ни один именинный торт не пострадал.";
+      `<strong>🎂 ${CAKE_TARGET}/${CAKE_TARGET}</strong><br />Удивительно.<br />Торты пойманы.<br />Ни один именинный торт не пострадал.`;
     retryBtn.hidden = true;
     nextBtn.hidden = false;
   } else {
@@ -242,7 +246,7 @@ function finishCakes(won) {
 function startCakesGame() {
   clearCakesField();
   state.cakes.caught = 0;
-  state.cakes.timeLeft = 10;
+  state.cakes.timeLeft = CAKE_TIME;
   state.cakes.running = true;
   updateCakesHud();
 
@@ -252,9 +256,14 @@ function startCakesGame() {
   $("#cakes-next").hidden = true;
 
   const field = $("#cakes-field");
-  for (let i = 0; i < 5; i += 1) spawnCake(field);
+  for (let i = 0; i < CAKE_TARGET; i += 1) {
+    spawnFlyer(field, { emoji: "🎂", isCake: true });
+  }
+  FOOD_ENEMIES.forEach((emoji) => {
+    spawnFlyer(field, { emoji, isCake: false });
+  });
 
-  state.cakes.moveId = setInterval(repositionCakes, 1200);
+  state.cakes.moveId = setInterval(repositionCakes, 650);
   state.cakes.timerId = setInterval(() => {
     state.cakes.timeLeft -= 1;
     updateCakesHud();
@@ -266,7 +275,7 @@ function setupCakes() {
   updateCakesHud();
 }
 
-/* ---------- Screen 3.2: spot the odd one ---------- */
+/* ---------- Screen 3.2: spot the gift among party poppers ---------- */
 function buildSpotGrid() {
   const grid = $("#spot-grid");
   const feedback = $("#spot-feedback");
@@ -278,14 +287,9 @@ function buildSpotGrid() {
   const cols = pick([4, 5, 5, 6]);
   const rows = pick([4, 5, 5]);
   const total = cols * rows;
-  const oddIndex = Math.floor(Math.random() * total);
-
-  let normal = "😀";
-  let odd = "😃";
-  const pair = pick(SPOT_PAIRS.filter((p) => p[0] !== p[1]));
-  if (pair) {
-    [normal, odd] = pair;
-  }
+  const giftIndex = Math.floor(Math.random() * total);
+  const normal = "🎉";
+  const odd = "🎁";
 
   grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
 
@@ -293,13 +297,13 @@ function buildSpotGrid() {
     const cell = document.createElement("button");
     cell.type = "button";
     cell.className = "spot-cell";
-    const isOdd = i === oddIndex;
-    cell.textContent = isOdd ? odd : normal;
-    cell.setAttribute("aria-label", isOdd ? "Возможно отличающийся смайлик" : "Смайлик");
+    const isGift = i === giftIndex;
+    cell.textContent = isGift ? odd : normal;
+    cell.setAttribute("aria-label", isGift ? "Подарок" : "Хлопушка");
 
     cell.addEventListener("click", () => {
       if (!nextBtn.hidden) return;
-      if (!isOdd) {
+      if (!isGift) {
         cell.classList.remove("miss");
         void cell.offsetWidth;
         cell.classList.add("miss");
@@ -399,7 +403,7 @@ function setupActions() {
       case "to-cakes":
         clearCakesField();
         state.cakes.caught = 0;
-        state.cakes.timeLeft = 10;
+        state.cakes.timeLeft = CAKE_TIME;
         updateCakesHud();
         $("#cakes-feedback").textContent = "";
         $("#cakes-start").hidden = false;

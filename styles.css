@@ -411,7 +411,7 @@ button {
   touch-action: manipulation;
 }
 
-.cake {
+.flyer {
   position: absolute;
   font-size: var(--size, 2rem);
   line-height: 1;
@@ -419,19 +419,23 @@ button {
   cursor: pointer;
   touch-action: manipulation;
   filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.35));
-  animation: cakeDrift var(--dur, 3s) linear infinite alternate;
+  animation: cakeDrift var(--dur, 1s) linear infinite alternate;
   transition: transform 0.12s ease, opacity 0.18s ease;
   z-index: 2;
 }
 
-.cake:active {
+.flyer:active {
   transform: scale(0.9);
 }
 
-.cake.caught {
+.flyer.caught {
   opacity: 0;
   transform: scale(1.4) rotate(18deg);
   pointer-events: none;
+}
+
+.flyer.enemy-hit {
+  animation: enemyShake 0.35s ease;
 }
 
 @keyframes cakeDrift {
@@ -441,6 +445,12 @@ button {
   to {
     transform: translate(var(--dx), var(--dy)) rotate(12deg);
   }
+}
+
+@keyframes enemyShake {
+  0%, 100% { transform: scale(1) rotate(0); }
+  30% { transform: scale(1.15) rotate(-12deg); }
+  60% { transform: scale(0.9) rotate(10deg); }
 }
 
 .spot-grid {
