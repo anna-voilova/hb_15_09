@@ -497,6 +497,94 @@ button {
   100% { transform: scale(1); }
 }
 
+.maze-board {
+  display: grid;
+  gap: 4px;
+  margin: 1rem 0 0.85rem;
+  padding: 0.65rem;
+  border-radius: 18px;
+  background: rgba(0, 0, 0, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: min(100%, 420px);
+  margin-inline: auto;
+  aspect-ratio: 1;
+}
+
+.maze-cell {
+  display: grid;
+  place-items: center;
+  border-radius: 8px;
+  font-size: clamp(0.85rem, 3.8vw, 1.25rem);
+  line-height: 1;
+  user-select: none;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.maze-cell.wall {
+  background: linear-gradient(160deg, #243552, #152238);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04);
+}
+
+.maze-cell.path {
+  background: rgba(47, 224, 181, 0.08);
+  border: 1px solid rgba(47, 224, 181, 0.12);
+}
+
+.maze-cell.start {
+  background: rgba(0, 87, 183, 0.18);
+  border-color: rgba(255, 215, 0, 0.35);
+}
+
+.maze-cell.end {
+  background: rgba(0, 47, 108, 0.22);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+.maze-cell.player {
+  background: rgba(255, 200, 87, 0.22);
+  border-color: rgba(255, 200, 87, 0.65);
+  transform: scale(1.05);
+  box-shadow: 0 0 16px rgba(255, 200, 87, 0.25);
+}
+
+.maze-controls {
+  display: grid;
+  justify-items: center;
+  gap: 0.45rem;
+  margin: 0.4rem auto 0.2rem;
+  width: min(220px, 100%);
+}
+
+.maze-controls-mid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+  width: 100%;
+}
+
+.maze-btn {
+  width: 64px;
+  height: 56px;
+  border-radius: 14px;
+  border: 1px solid rgba(47, 224, 181, 0.35);
+  background: rgba(47, 224, 181, 0.1);
+  color: var(--text);
+  font-size: 1.15rem;
+  font-weight: 800;
+  touch-action: manipulation;
+  user-select: none;
+  transition: background 0.15s ease, transform 0.12s ease;
+}
+
+.maze-controls-mid .maze-btn {
+  width: 100%;
+}
+
+.maze-btn:active {
+  transform: scale(0.96);
+  background: rgba(47, 224, 181, 0.22);
+}
+
 .checklist {
   list-style: none;
   margin: 0 0 1.2rem;

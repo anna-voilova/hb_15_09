@@ -115,7 +115,29 @@
           <p class="lead">Среди хлопушек спрятан подарок.<br />Найди его.</p>
           <div class="spot-grid" id="spot-grid" aria-label="Сетка смайликов"></div>
           <p class="feedback" id="spot-feedback" role="status" aria-live="polite"></p>
-          <button type="button" class="btn btn-primary" id="spot-next" data-action="to-delivery" hidden>ПЕРЕЙТИ К ДОСТАВКЕ</button>
+          <button type="button" class="btn btn-primary" id="spot-next" data-action="to-maze" hidden>СЛЕДУЮЩЕЕ ИСПЫТАНИЕ</button>
+        </div>
+      </section>
+
+      <!-- Экран 3.3: лабиринт -->
+      <section class="screen" data-screen="maze" aria-labelledby="maze-title">
+        <div class="panel panel-game">
+          <h2 id="maze-title" class="title">МИНИ-ИСПЫТАНИЕ №3</h2>
+          <p class="lead">Доставь подарок 🎁 из пункта А (🇺🇦) в пункт Б (🇫🇮).<br />Обойди стены и доведи посылку до Финляндии.</p>
+          <div class="maze-board" id="maze-board" aria-label="Лабиринт доставки"></div>
+          <div class="maze-controls" aria-label="Управление">
+            <button type="button" class="maze-btn" data-maze-dir="up" aria-label="Вверх">▲</button>
+            <div class="maze-controls-mid">
+              <button type="button" class="maze-btn" data-maze-dir="left" aria-label="Влево">◀</button>
+              <button type="button" class="maze-btn" data-maze-dir="down" aria-label="Вниз">▼</button>
+              <button type="button" class="maze-btn" data-maze-dir="right" aria-label="Вправо">▶</button>
+            </div>
+          </div>
+          <p class="feedback" id="maze-feedback" role="status" aria-live="polite"></p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-ghost" id="maze-reset" data-action="reset-maze">СБРОСИТЬ МАРШРУТ</button>
+            <button type="button" class="btn btn-primary" id="maze-next" data-action="to-delivery" hidden>ПЕРЕЙТИ К ДОСТАВКЕ</button>
+          </div>
         </div>
       </section>
 

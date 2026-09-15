@@ -9,6 +9,7 @@ const LEVELS = {
   bonus: 2,
   cakes: 3,
   spot: 3,
+  maze: 3,
   delivery: 4,
   finale: 4,
 };
@@ -163,9 +164,9 @@ function updateCakesHud() {
 function placeFlyer(el, field) {
   const size = rand(1.5, 2.6);
   el.style.setProperty("--size", `${size}rem`);
-  el.style.setProperty("--dur", `${rand(0.55, 1.15)}s`);
-  el.style.setProperty("--dx", `${rand(-110, 110)}px`);
-  el.style.setProperty("--dy", `${rand(-90, 90)}px`);
+  el.style.setProperty("--dur", `${rand(1.2, 2.2)}s`);
+  el.style.setProperty("--dx", `${rand(-70, 70)}px`);
+  el.style.setProperty("--dy", `${rand(-55, 55)}px`);
 
   const maxX = Math.max(field.clientWidth - 56, 10);
   const maxY = Math.max(field.clientHeight - 56, 10);
@@ -263,7 +264,7 @@ function startCakesGame() {
     spawnFlyer(field, { emoji, isCake: false });
   });
 
-  state.cakes.moveId = setInterval(repositionCakes, 650);
+  state.cakes.moveId = setInterval(repositionCakes, 1800);
   state.cakes.timerId = setInterval(() => {
     state.cakes.timeLeft -= 1;
     updateCakesHud();
@@ -313,7 +314,7 @@ function buildSpotGrid() {
 
       cell.classList.add("hit");
       feedback.innerHTML =
-        "✅ Найдено!<br /><br />Отлично.<br />Система официально признаёт тебя пригодным к получению подарка.";
+        "✅ Найдено!<br /><br />Отлично.<br />Осталось одно логистическое испытание.";
       $$(".spot-cell", grid).forEach((c) => {
         c.disabled = true;
       });
@@ -322,6 +323,135 @@ function buildSpotGrid() {
 
     grid.appendChild(cell);
   }
+}
+
+/* ---------- Screen 3.3: maze UA -> FI ---------- */
+// 0 = путь, 1 = стена. Старт [0,0] 🇺🇦, финиш [8,8] 🇫🇮
+const MAZE_MAP = [
+  [0, 0, 1, 0, 0, 0, 1, 0, 0],
+  [1, 0, 1, 0, 1, 0, 1, 0, 1],
+  [0, 0, 0, 0, 1, 0, 0, 0, 0],
+  [0, 1, 1, 1, 1, 0, 1, 1, 0],
+  [0, 0, 0, 0, 0, 0, 0, 1, 0],
+  [1, 1, 0, 1, 1, 1, 0, 1, 0],
+  [0, 0, 0, 0, 0, 1, 0, 0, 0],
+  [0, 1, 1, 1, 0, 1, 1, 1, 0],
+  [0, 0, 0, 1, 0, 0, 0, 0, 0],
+];
+
+const MAZE_START = { r: 0, c: 0 };
+const MAZE_END = { r: 8, c: 8 };
+const MAZE_DIRS = {
+  up: { r: -1, c: 0 },
+  down: { r: 1, c: 0 },
+  left: { r: 0, c: -1 },
+  right: { r: 0, c: 1 },
+};
+
+const mazeState = {
+  r: MAZE_START.r,
+  c: MAZE_START.c,
+  won: false,
+  ready: false,
+};
+
+function renderMaze() {
+  const board = $("#maze-board");
+  board.innerHTML = "";
+  board.style.gridTemplateColumns = `repeat(${MAZE_MAP[0].length}, 1fr)`;
+
+  MAZE_MAP.forEach((row, r) => {
+    row.forEach((cell, c) => {
+      const tile = document.createElement("div");
+      tile.className = "maze-cell";
+      const isWall = cell === 1;
+      const isStart = r === MAZE_START.r && c === MAZE_START.c;
+      const isEnd = r === MAZE_END.r && c === MAZE_END.c;
+      const isPlayer = r === mazeState.r && c === mazeState.c;
+
+      if (isWall) {
+        tile.classList.add("wall");
+        tile.setAttribute("aria-hidden", "true");
+      } else {
+        tile.classList.add("path");
+        if (isStart) tile.classList.add("start");
+        if (isEnd) tile.classList.add("end");
+        if (isPlayer) tile.classList.add("player");
+
+        if (isPlayer) {
+          tile.textContent = "🎁";
+        } else if (isStart) {
+          tile.textContent = "🇺🇦";
+        } else if (isEnd) {
+          tile.textContent = "🇫🇮";
+        }
+      }
+
+      board.appendChild(tile);
+    });
+  });
+}
+
+function initMaze() {
+  mazeState.r = MAZE_START.r;
+  mazeState.c = MAZE_START.c;
+  mazeState.won = false;
+  mazeState.ready = true;
+  $("#maze-feedback").textContent = "Маршрут: Украина 🇺🇦 → Финляндия 🇫🇮";
+  $("#maze-next").hidden = true;
+  renderMaze();
+}
+
+function tryMoveMaze(dir) {
+  if (!mazeState.ready || mazeState.won) return;
+  const delta = MAZE_DIRS[dir];
+  if (!delta) return;
+
+  const nextR = mazeState.r + delta.r;
+  const nextC = mazeState.c + delta.c;
+  const row = MAZE_MAP[nextR];
+  if (!row || row[nextC] === undefined || row[nextC] === 1) {
+    $("#maze-feedback").textContent = "🚧 Стена. Система предлагает другой путь.";
+    return;
+  }
+
+  mazeState.r = nextR;
+  mazeState.c = nextC;
+  renderMaze();
+
+  if (mazeState.r === MAZE_END.r && mazeState.c === MAZE_END.c) {
+    mazeState.won = true;
+    $("#maze-feedback").innerHTML =
+      "✅ Подарок доставлен в Финляндию!<br />Международная логистика пройдена успешно.";
+    $("#maze-next").hidden = false;
+    return;
+  }
+
+  $("#maze-feedback").textContent = "Подарок в пути…";
+}
+
+function setupMazeControls() {
+  document.querySelectorAll("[data-maze-dir]").forEach((btn) => {
+    btn.addEventListener("click", () => tryMoveMaze(btn.dataset.mazeDir));
+  });
+
+  window.addEventListener("keydown", (event) => {
+    if (!$('[data-screen="maze"]').classList.contains("active")) return;
+    const map = {
+      ArrowUp: "up",
+      ArrowDown: "down",
+      ArrowLeft: "left",
+      ArrowRight: "right",
+      w: "up",
+      s: "down",
+      a: "left",
+      d: "right",
+    };
+    const dir = map[event.key] || map[event.key.toLowerCase()];
+    if (!dir) return;
+    event.preventDefault();
+    tryMoveMaze(dir);
+  });
 }
 
 /* ---------- Screen 4: delivery ---------- */
@@ -419,6 +549,13 @@ function setupActions() {
         showScreen("spot");
         buildSpotGrid();
         break;
+      case "to-maze":
+        showScreen("maze");
+        initMaze();
+        break;
+      case "reset-maze":
+        initMaze();
+        break;
       case "to-delivery":
         showScreen("delivery");
         break;
@@ -448,6 +585,7 @@ function init() {
   setupIdentity();
   setupBonus();
   setupCakes();
+  setupMazeControls();
   setupActions();
   showScreen("intro");
   progressEl.hidden = true;
