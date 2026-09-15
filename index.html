@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b1220" />
+  <title>Birthday Quest — Система доставки подарка</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@500;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="fx-layer" id="fx-layer" aria-hidden="true"></div>
+
+  <div class="app">
+    <header class="hud">
+      <div class="hud-brand">BIRTHDAY QUEST</div>
+      <div class="progress" id="progress" hidden>
+        <span class="progress-label" id="progress-label">Уровень 1 / 4</span>
+        <div class="progress-track">
+          <div class="progress-fill" id="progress-fill"></div>
+        </div>
+      </div>
+    </header>
+
+    <main class="stage" id="stage">
+      <!-- Экран 1: старт -->
+      <section class="screen active" data-screen="intro" aria-labelledby="intro-title">
+        <div class="panel">
+          <p class="badge">СИСТЕМА ДОСТАВКИ v1.0</p>
+          <h1 id="intro-title" class="title alert">🚨 СИСТЕМНОЕ УВЕДОМЛЕНИЕ</h1>
+          <div class="copy">
+            <p>Сегодня был обнаружен человек, у которого день рождения.</p>
+            <p>Система решила, что этот человек заслуживает подарка.</p>
+            <p>Есть только одна проблема:<br />подарок физически находится слишком далеко.</p>
+            <p>Поэтому была запущена экспериментальная система доставки подарков через интернет.</p>
+            <p class="emphasis">Для получения подарка необходимо пройти несколько испытаний.</p>
+          </div>
+          <button type="button" class="btn btn-primary" data-action="start-quest">НАЧАТЬ КВЕСТ</button>
+        </div>
+      </section>
+
+      <!-- Экран 1: проверка личности -->
+      <section class="screen" data-screen="identity" aria-labelledby="identity-title">
+        <div class="panel">
+          <h2 id="identity-title" class="title">Кто сегодня именинник?</h2>
+          <div class="options" id="identity-options">
+            <button type="button" class="option" data-correct="false">🤖 Искусственный интеллект</button>
+            <button type="button" class="option" data-correct="false">🐈 Случайный кот</button>
+            <button type="button" class="option" data-correct="true">🎂 Человек, которому сегодня исполняется ещё один год</button>
+            <button type="button" class="option" data-correct="false">👽 Инопланетянин</button>
+          </div>
+          <p class="feedback" id="identity-feedback" role="status" aria-live="polite"></p>
+          <button type="button" class="btn btn-primary" id="identity-next" data-action="to-bonus" hidden>ДАЛЬШЕ</button>
+        </div>
+      </section>
+
+      <!-- Экран 2: бонус -->
+      <section class="screen" data-screen="bonus" aria-labelledby="bonus-title">
+        <div class="panel">
+          <h2 id="bonus-title" class="title">ВЫБЕРИ БОНУС НА СЛЕДУЮЩИЙ ГОД</h2>
+          <p class="lead">Тебе доступны три бонуса.<br />Можно выбрать только один.</p>
+          <div class="bonus-grid" id="bonus-grid">
+            <button type="button" class="bonus-card" data-bonus="money" data-emoji="💰">
+              <span class="bonus-emoji">💰</span>
+              <span class="bonus-name">БОГАТСТВО</span>
+              <span class="bonus-desc">+50% к деньгам</span>
+            </button>
+            <button type="button" class="bonus-card" data-bonus="energy" data-emoji="⚡">
+              <span class="bonus-emoji">⚡</span>
+              <span class="bonus-name">ЭНЕРГИЯ</span>
+              <span class="bonus-desc">+50% к энергии</span>
+            </button>
+            <button type="button" class="bonus-card" data-bonus="luck" data-emoji="🍀">
+              <span class="bonus-emoji">🍀</span>
+              <span class="bonus-name">УДАЧА</span>
+              <span class="bonus-desc">+50% к удаче</span>
+            </button>
+          </div>
+          <p class="feedback" id="bonus-feedback" hidden>
+            Хороший выбор.<br />
+            Система записала его в личное дело.<br />
+            Изменить уже нельзя.<br />
+            <span class="muted">(На самом деле можно. Но мы сделаем вид, что нельзя.)</span>
+          </p>
+          <button type="button" class="btn btn-primary" id="bonus-next" data-action="to-cakes" hidden>ПОЛУЧИТЬ БОНУС</button>
+        </div>
+      </section>
+
+      <!-- Экран 3.1: торты -->
+      <section class="screen" data-screen="cakes" aria-labelledby="cakes-title">
+        <div class="panel panel-game">
+          <h2 id="cakes-title" class="title">МИНИ-ИСПЫТАНИЕ №1</h2>
+          <p class="lead">Поймай 5 летающих тортов за 10 секунд.</p>
+          <div class="game-hud">
+            <span id="cakes-score">ТОРТЫ: 0 / 5</span>
+            <span id="cakes-time">ВРЕМЯ: 10</span>
+          </div>
+          <div class="playfield" id="cakes-field" aria-label="Игровая область: ловля тортов"></div>
+          <p class="feedback" id="cakes-feedback" role="status" aria-live="polite"></p>
+          <div class="btn-row">
+            <button type="button" class="btn btn-primary" id="cakes-start" data-action="start-cakes">НАЧАТЬ</button>
+            <button type="button" class="btn btn-primary" id="cakes-retry" data-action="retry-cakes" hidden>ПОПРОБОВАТЬ ЕЩЁ РАЗ</button>
+            <button type="button" class="btn btn-primary" id="cakes-next" data-action="to-spot" hidden>СЛЕДУЮЩЕЕ ИСПЫТАНИЕ</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Экран 3.2: лишний смайлик -->
+      <section class="screen" data-screen="spot" aria-labelledby="spot-title">
+        <div class="panel panel-game">
+          <h2 id="spot-title" class="title">МИНИ-ИСПЫТАНИЕ №2</h2>
+          <p class="lead">Среди смайликов есть один, который отличается от остальных.<br />Найди его.</p>
+          <div class="spot-grid" id="spot-grid" aria-label="Сетка смайликов"></div>
+          <p class="feedback" id="spot-feedback" role="status" aria-live="polite"></p>
+          <button type="button" class="btn btn-primary" id="spot-next" data-action="to-delivery" hidden>ПЕРЕЙТИ К ДОСТАВКЕ</button>
+        </div>
+      </section>
+
+      <!-- Экран 4: доставка -->
+      <section class="screen" data-screen="delivery" aria-labelledby="delivery-title">
+        <div class="panel">
+          <h2 id="delivery-title" class="title">📦 РЕЗУЛЬТАТ ПРОВЕРКИ ДОСТАВКИ</h2>
+          <ul class="checklist" id="delivery-checklist">
+            <li><span>Подарок:</span> <strong>ГОТОВ ✅</strong></li>
+            <li><span>Получатель:</span> <strong>ПОДТВЕРЖДЁН ✅</strong></li>
+            <li><span>Курьер:</span> <strong>ГОТОВ ✅</strong></li>
+            <li><span>Упаковка:</span> <strong>ГОТОВА ✅</strong></li>
+            <li class="fail"><span>Расстояние:</span> <strong>ОЧЕНЬ НЕУДОБНОЕ ❌</strong></li>
+          </ul>
+          <div class="copy">
+            <p>Доставка обычным способом невозможна.</p>
+            <p class="emphasis">Поэтому подарок будет доставлен через интернет.</p>
+          </div>
+          <button type="button" class="btn btn-primary" id="launch-delivery" data-action="launch-delivery">🚀 ЗАПУСТИТЬ ДОСТАВКУ</button>
+          <div class="delivery-arena" id="delivery-arena" hidden>
+            <div class="gift-fly" id="gift-fly" aria-hidden="true">🎁</div>
+          </div>
+          <p class="feedback big" id="delivery-done" hidden>ДОСТАВКА ЗАВЕРШЕНА ✅</p>
+          <button type="button" class="btn btn-primary" id="to-finale" data-action="to-finale" hidden>ЗАБРАТЬ ПОДАРОК</button>
+        </div>
+      </section>
+
+      <!-- Финал -->
+      <section class="screen" data-screen="finale" aria-labelledby="finale-title">
+        <div class="panel panel-finale">
+          <div class="gift-box" id="gift-box" aria-hidden="true">
+            <div class="gift-lid">🎀</div>
+            <div class="gift-body">🎁</div>
+          </div>
+          <button type="button" class="btn btn-primary" id="open-gift" data-action="open-gift">ОТКРЫТЬ ПОДАРОК</button>
+
+          <div class="finale-content" id="finale-content" hidden>
+            <h2 id="finale-title" class="title success">🎉 ДОСТАВКА ЗАВЕРШЕНА</h2>
+            <div class="meta">
+              <p>Получатель: <strong id="recipient-name">Друг</strong></p>
+              <p>Статус: <strong>🎂 ИМЕНИННИК</strong></p>
+            </div>
+            <div class="kit">
+              <p class="kit-title">Комплектация:</p>
+              <ul>
+                <li>✓ +1 год опыта</li>
+                <li>✓ новые воспоминания</li>
+                <li>✓ несколько новых историй</li>
+                <li>✓ удача на следующий год</li>
+                <li>✓ право официально праздновать сегодня</li>
+                <li>✓ поздравление от друга из другой страны</li>
+              </ul>
+            </div>
+            <div class="congrats">
+              <p class="congrats-lead">С днём рождения! 🎉</p>
+              <p>Желаю тебе классного года — чтобы в нём было больше вещей, которые действительно радуют, интересных событий, хороших людей рядом и поменьше всякой ерунды, которую приходится терпеть.</p>
+              <p>Пусть всё задуманное постепенно получается, а неожиданные события будут преимущественно приятными.</p>
+              <p>Хорошо тебе отпраздновать! 🎂</p>
+            </div>
+            <button type="button" class="btn btn-ghost" id="secret-btn" data-action="open-secret" hidden>🔓 РАЗБЛОКИРОВАТЬ СЕКРЕТНЫЙ КОНТЕНТ</button>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- Секретный модал -->
+  <div class="modal" id="secret-modal" hidden>
+    <div class="modal-backdrop" data-action="close-secret"></div>
+    <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="secret-title">
+      <p class="badge">СЕКРЕТНЫЙ ПРОТОКОЛ</p>
+      <h2 id="secret-title" class="title">🏆 СЕКРЕТНОЕ ДОСТИЖЕНИЕ РАЗБЛОКИРОВАНО</h2>
+      <p class="achievement">«ПЕРЕЖИТЬ ЕЩЁ ОДИН ГОД»</p>
+      <ul class="secret-stats">
+        <li><span>Сложность:</span> <strong>⭐⭐⭐⭐⭐</strong></li>
+        <li><span>Награда:</span> <strong>+1 к возрасту</strong></li>
+        <li><span>Бонус:</span> <strong>неизвестен</strong></li>
+        <li><span>Следующий квест:</span> <strong>через 365 дней</strong></li>
+      </ul>
+      <button type="button" class="btn btn-primary" data-action="close-secret">[ ВЕРНУТЬСЯ К ОБЫЧНОЙ ЖИЗНИ ]</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
